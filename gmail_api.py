@@ -90,7 +90,11 @@ class GmailAPI:
                         sender = header['value']
                     if header['name'] == 'Date':
                         date = header['value']
+                # return headers
                 print("----------------------------")    
                 print(f"{sender}\n{subject}\n{date}")
         except HttpError as error:
             print(f"Cannot fetch the data. Due to {error}!")
+    
+    def generate_csv(self, filename):
+        pass
