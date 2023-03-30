@@ -1,0 +1,6 @@
+credentials.json
+token.json
+__pycache__
+.idea
+gmail_v1.py
+main.py
