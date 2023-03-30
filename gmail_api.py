@@ -7,8 +7,15 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 
+def credentials_token(url):
+    """
+        Reuable constants   
+    """
+    return Credentials.from_authorized_user_file(
+                "token.json", url)
+
 class GmailAPI:
-    def __init__(self, url=["https://www.googleapis.com/auth/gmail.readonly"]):
+    def __init__(self, cerds=None, url=["https://www.googleapis.com/auth/gmail.readonly"]):
         """
             If you are modifying this scope you've to delete the generated token file.
 
@@ -18,15 +25,21 @@ class GmailAPI:
         """
             Listing the user's Gmail Label.
         """
-        creds = None
+        # creds by Default is None
         """
         The file token.json stores the user's access and refresh tokens, and is
         created automatically when the authorization flow completes for the first
         time.
         """
         if os.path.exists("token.json"):
-            creds = Credentials.from_authorized_user_file(
-                "token.json", self.URL)
+            creds = credentials_token(self.URL)
+            """ 
+               .-----------------------------------------------------------------------.
+               | creds = Credentials.from_authorized_user_file("token.json", self.URL) |
+               '-----------------------------------------------------------------------'
+               This code can be merged with the function kowns as the credentials_token
+               for reusability.
+            """
             # If there are no (valid) credentials available, let the user log in.
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
@@ -46,7 +59,7 @@ class GmailAPI:
 
     def display_api_result(self, user_id="me"):
         self.user_id = user_id
-        cerds = Credentials.from_authorized_user_file('token.json', self.URL)
+        cerds = credentials_token(self.URL)
         try:
             service = build('gmail', 'v1', credentials=cerds)
             results = service.users().labels().list(userId=self.user_id).execute()
@@ -61,6 +74,8 @@ class GmailAPI:
             print(f"An error occurred: {error}.")
 
     def set_labels(self, query, max_results=5):
+        self.max_results = max_results
+        self.query = query
         """
             Set Labels to fetch the messages.
             [
@@ -72,11 +87,10 @@ class GmailAPI:
             There are more labels but few examples are given here
         """
         try:
-            cerds = Credentials.from_authorized_user_file(
-                "token.json", self.URL)
+            cerds = credentials_token(self.URL)
             service = build('gmail', 'v1', credentials=cerds)
             results = service.users().messages().list(
-                userId='me', maxResults=max_results, q="in:"+query).execute()
+                userId=self.user_id, maxResults=max_results, q="in:"+query).execute()
             messages = results.get('messages', [])
             for message in messages:
                 load_data = service.users().messages().get(
@@ -96,5 +110,3 @@ class GmailAPI:
         except HttpError as error:
             print(f"Cannot fetch the data. Due to {error}!")
     
-    def generate_csv(self, filename):
-        pass
