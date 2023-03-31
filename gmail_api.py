@@ -9,18 +9,19 @@ from googleapiclient.errors import HttpError
 
 def credentials_token(url):
     """
-        Reuable constants   
+        Reusable constants   
     """
     return Credentials.from_authorized_user_file(
                 "token.json", url)
 
 class GmailAPI:
-    def __init__(self, creds=None, url=["https://www.googleapis.com/auth/gmail.readonly"]):
+    def __init__(self, creds=None, url=None):
         """
             If you are modifying this scope you've to delete the generated token file.
 
             Here the URL will remain constant
         """
+        url = ["https://www.googleapis.com/auth/gmail.readonly"]
         self.URL = url
         """
             Listing the user's Gmail Label.
