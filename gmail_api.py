@@ -85,6 +85,8 @@ class GmailAPI:
                 "sent"
             ]
             There are more labels but few examples are given here
+
+            Returns the headers for the specific to the user for the further use.
         """
         try:
             cerds = credentials_token(self.URL)
@@ -97,16 +99,7 @@ class GmailAPI:
                     userId='me', id=message['id']).execute()
                 payload = load_data['payload']
                 headers = payload['headers']
-                for header in headers:
-                    if header['name'] == 'Subject':
-                        subject = header['value']
-                    if header['name'] == 'From':
-                        sender = header['value']
-                    if header['name'] == 'Date':
-                        date = header['value']
-                # return headers
-                print("----------------------------")    
-                print(f"{sender}\n{subject}\n{date}")
+                return headers
         except HttpError as error:
             print(f"Cannot fetch the data. Due to {error}!")
     
