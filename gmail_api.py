@@ -9,18 +9,19 @@ from googleapiclient.errors import HttpError
 
 def credentials_token(url):
     """
-        Reuable constants   
+        Reusable constants   
     """
     return Credentials.from_authorized_user_file(
                 "token.json", url)
 
 class GmailAPI:
-    def __init__(self, cerds=None, url=["https://www.googleapis.com/auth/gmail.readonly"]):
+    def __init__(self, creds=None, url=None):
         """
             If you are modifying this scope you've to delete the generated token file.
 
             Here the URL will remain constant
         """
+        url = ["https://www.googleapis.com/auth/gmail.readonly"]
         self.URL = url
         """
             Listing the user's Gmail Label.
@@ -85,8 +86,6 @@ class GmailAPI:
                 "sent"
             ]
             There are more labels but few examples are given here
-
-            Returns the headers for the specific to the user for the further use.
         """
         try:
             cerds = credentials_token(self.URL)
@@ -99,7 +98,15 @@ class GmailAPI:
                     userId='me', id=message['id']).execute()
                 payload = load_data['payload']
                 headers = payload['headers']
-                return headers
+                for header in headers:
+                    if header['name'] == 'Subject':
+                        subject = header['value']
+                    if header['name'] == 'From':
+                        sender = header['value']
+                    if header['name'] == 'Date':
+                        date = header['value']
+                print("----------------------------")    
+                print(f"{sender}\n{subject}\n{date}")
         except HttpError as error:
             print(f"Cannot fetch the data. Due to {error}!")
     
