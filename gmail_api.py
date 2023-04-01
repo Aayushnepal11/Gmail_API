@@ -134,12 +134,12 @@ class GmailAPI:
         """  Returns the value for the headers """
         service = build_service(cerds=credentials_token(self.URL))
         messages = process_getter(self.URL, self.user_id, self.max_results, self.query)
-        csv_data = list()
+        data = list()
         for message in messages:
             new_data = service.users().messages().get(
                 userId=self.user_id, id=message['id']
             ).execute()
             payload = new_data['payload']
             headers = payload['headers']
-            csv_data.append(headers)
-        return csv_data
+            data.append(headers)
+        return data
