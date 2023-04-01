@@ -12,7 +12,25 @@ def credentials_token(url):
         Reusable constants   
     """
     return Credentials.from_authorized_user_file(
-                "token.json", url)
+        "token.json", url)
+
+
+def process_getter(url, user_id, max_results, query):
+    """
+        This functions returns the actual behaviour towards the data
+    """
+    cerds = credentials_token(url)
+    service = build('gmail', 'v1', credentials=cerds)
+    results = service.users().messages().list(
+        userId=user_id, maxResults=max_results, q="in:" + query).execute()
+    messages = results.get('messages', [])
+    return messages
+
+
+def build_service(cerds):
+    """ Building an api service to fetch the gmail data. """
+    return build('gmail', 'v1', credentials=cerds)
+
 
 class GmailAPI:
     def __init__(self, creds=None, url=None):
@@ -62,7 +80,7 @@ class GmailAPI:
         self.user_id = user_id
         cerds = credentials_token(self.URL)
         try:
-            service = build('gmail', 'v1', credentials=cerds)
+            service = build_service(cerds)
             results = service.users().labels().list(userId=self.user_id).execute()
             labels = results.get('labels', [])
             if not labels:
@@ -91,7 +109,7 @@ class GmailAPI:
             cerds = credentials_token(self.URL)
             service = build('gmail', 'v1', credentials=cerds)
             results = service.users().messages().list(
-                userId=self.user_id, maxResults=max_results, q="in:"+query).execute()
+                userId=self.user_id, maxResults=self.max_results, q="in:" + self.query).execute()
             messages = results.get('messages', [])
             for message in messages:
                 load_data = service.users().messages().get(
@@ -105,8 +123,23 @@ class GmailAPI:
                         sender = header['value']
                     if header['name'] == 'Date':
                         date = header['value']
-                print("----------------------------")    
+                print("----------------------------")
                 print(f"{sender}\n{subject}\n{date}")
+            print()
+
         except HttpError as error:
             print(f"Cannot fetch the data. Due to {error}!")
-    
+
+    def data_getter(self):
+        """  Returns the value for the headers """
+        service = build_service(cerds=credentials_token(self.URL))
+        messages = process_getter(self.URL, self.user_id, self.max_results, self.query)
+        csv_data = list()
+        for message in messages:
+            new_data = service.users().messages().get(
+                userId=self.user_id, id=message['id']
+            ).execute()
+            payload = new_data['payload']
+            headers = payload['headers']
+            csv_data.append(headers)
+        return csv_data
