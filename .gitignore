@@ -7,3 +7,6 @@ main.py
 test.py
 spam.csv
 inbox.csv
+data.csv
+data_inbox.csv
+new_inbox.csv
