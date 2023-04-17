@@ -1,12 +1,9 @@
-credentials.json
-token.json
+*.json
 __pycache__
 .idea
 gmail_v1.py
 main.py
 test.py
-spam.csv
-inbox.csv
-data.csv
-data_inbox.csv
-new_inbox.csv
+*.csv
+*.txt
+files.py
