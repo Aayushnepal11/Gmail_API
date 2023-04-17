@@ -7,6 +7,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 
+
 def credentials_token(url):
     """
         Reusable constants   
@@ -30,6 +31,20 @@ def process_getter(url, user_id, max_results, query):
 def build_service(cerds):
     """ Building an api service to fetch the gmail data. """
     return build('gmail', 'v1', credentials=cerds) 
+
+
+def generate_data(messages, url, *args):
+    """
+        Generates the output
+    """
+    data_list = list(*args)
+    for header in messages:
+        load_data = build_service(credentials_token(url)).users().messages().get(userId='me', id=header['id']).execute()
+        payload = load_data['payload']
+        headers = payload['headers']
+        data_list.append(headers)
+    return data_list
+
 
 class GmailAPI:
     def __init__(self, creds=None, url=None):
@@ -143,11 +158,15 @@ class GmailAPI:
             data.append(headers)
         return data
 
+
     def next_page_token(self):
+        """
+            Next Page Token to generate the data.
+        """
         pages = 0
         limit = 1
         service = build_service(credentials_token(self.URL))
-        response = service.users().messages().list(userId='me',labelIds=['INBOX'], maxResults="1000").execute()
+        response = service.users().messages().list(userId='me',labelIds=['INBOX'], maxResults="3000").execute()
         messages = []
         if 'messages' in response:
             messages.extend(response['messages'])
@@ -156,10 +175,4 @@ class GmailAPI:
             response = service.users().messages().list(userId='me',pageToken=page_token, labelIds=['INBOX'],).execute()
             messages.extend(response['messages'])
             pages +=1
-        data_list = []
-        for header in messages:
-            load_data = service.users().messages().get(userId='me', id=header['id']).execute()
-            payload = load_data['payload']
-            headers = payload['headers']
-            data_list.append(headers)
-        return data_list
+        return generate_data(url=self.URL, messages=messages)
