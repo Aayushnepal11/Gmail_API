@@ -166,7 +166,7 @@ class GmailAPI:
         pages = 0
         limit = 1
         service = build_service(credentials_token(self.URL))
-        response = service.users().messages().list(userId='me',labelIds=['INBOX'], maxResults="3000").execute()
+        response = service.users().messages().list(userId='me',labelIds=['INBOX'], maxResults="1000").execute()
         messages = []
         if 'messages' in response:
             messages.extend(response['messages'])
