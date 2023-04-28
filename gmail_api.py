@@ -33,6 +33,7 @@ def build_service(cerds):
     return build('gmail', 'v1', credentials=cerds) 
 
 
+# Glitch Function
 def generate_data(messages, url, *args):
     """
         Generates the output
@@ -164,9 +165,9 @@ class GmailAPI:
             Next Page Token to generate the data.
         """
         pages = 0
-        limit = 1
+        limit = 20
         service = build_service(credentials_token(self.URL))
-        response = service.users().messages().list(userId='me',labelIds=['INBOX'], maxResults="1000").execute()
+        response = service.users().messages().list(userId='me',labelIds=['INBOX'], maxResults="7000").execute()
         messages = []
         if 'messages' in response:
             messages.extend(response['messages'])
@@ -175,4 +176,11 @@ class GmailAPI:
             response = service.users().messages().list(userId='me',pageToken=page_token, labelIds=['INBOX'],).execute()
             messages.extend(response['messages'])
             pages +=1
-        return generate_data(url=self.URL, messages=messages)
+        # return generate_data(messages=messages, url=self.URL)
+        data_list = list()
+        for header in messages:
+            load_data = service.users().messages().get(userId='me', id=header['id']).execute()
+            payload = load_data['payload']
+            headers = payload['headers']
+            data_list.append(headers)
+        return data_list
